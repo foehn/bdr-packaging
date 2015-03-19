@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+SRCDIR=$(CURDIR)
+include /usr/share/postgresql-common/pgxs_debian_control.mk
+
+override_dh_auto_build:
+	+pg_buildext build $(CURDIR) build-%v "$(CFLAGS)"
+
+override_dh_auto_clean:
+	+pg_buildext clean $(CURDIR) build-%v
+
+override_dh_auto_test:
+	# nothing to do here, see debian/tests/* instead
+
+override_dh_auto_configure:
+	./autogen.sh
+	+pg_buildext configure $(CURDIR) build-%v --enable-bdr=no
+
+override_dh_auto_install:
+	+pg_buildext install $(CURDIR) build-%v postgresql-%v-udr-plugin 
+
+%:
+	dh $@
+
