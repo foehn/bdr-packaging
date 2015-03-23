@@ -1,0 +1,127 @@
+Source: postgresql-bdr-9.4
+Section: database
+Priority: optional
+Maintainer: BDR Developers <bdr@2ndquadrant.com>
+Uploaders: BDR Developers <bdr@2ndquadrant.com>
+Standards-Version: 3.9.6
+Build-Depends: debhelper (>= 9~),
+ dpkg-dev (>= 1.16.1~) | hardening-wrapper,
+ perl (>= 5.8),
+ libperl-dev,
+ libipc-run-perl,
+ tcl8.6-dev | tcl8.5-dev,
+ libedit-dev,
+ libssl-dev,
+ zlib1g-dev | libz-dev,
+ libpam0g-dev | libpam-dev,
+ libxml2-dev,
+ krb5-multidev,
+ libldap2-dev,
+ libselinux1-dev [linux-any],
+ libxslt1-dev,
+ uuid-dev,
+ python-dev,
+ python3-dev,
+ bison,
+ flex,
+ openjade,
+ docbook-dsssl,
+ docbook-xsl,
+ docbook,
+ opensp,
+ xsltproc,
+ gettext
+Homepage: http://www.postgresql.org/
+Vcs-Browser: http://git.postgresql.org/gitweb/?p=2ndquadrant_bdr.git;a=summary
+XS-Testsuite: autopkgtest
+
+Package: postgresql-bdr-9.4
+Architecture: any
+Provides: postgresql-9.4
+Conflicts: postgresql-9.4
+Replaces: postgresql-9.4
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ postgresql-bdr-client-9.4,
+ postgresql-common (>= 142~),
+ tzdata,
+ ssl-cert,
+ locales
+Suggests: oidentd | ident-server, locales-all
+Description: object-relational SQL database, version 9.4 server
+ PostgreSQL is a fully featured object-relational database management
+ system.  It supports a large part of the SQL standard and is designed
+ to be extensible by users in many aspects.  Some of the features are:
+ ACID transactions, foreign keys, views, sequences, subqueries,
+ triggers, user-defined types and functions, outer joins, multiversion
+ concurrency control.  Graphical user interfaces and bindings for many
+ programming languages are available as well.
+ .
+ This package provides the database server for PostgreSQL-BDR 9.4. Servers
+ for other major release versions can be installed simultaneously and
+ are coordinated by the postgresql-common package. A package providing
+ ident-server is needed if you want to authenticate remote connections
+ with identd.
+
+Package: postgresql-bdr-9.4-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Provides: postgresql-9.4-dbg
+Conflicts: postgresql-9.4-dbg
+Replaces: postgresql-9.4-dbg
+Depends: ${misc:Depends}, postgresql-bdr-9.4 (= ${binary:Version})
+Description: debug symbols for postgresql-bdr-9.4
+ PostgreSQL is a fully featured object-relational database management
+ system.  It supports a large part of the SQL standard and is designed
+ to be extensible by users in many aspects.  Some of the features are:
+ ACID transactions, foreign keys, views, sequences, subqueries,
+ triggers, user-defined types and functions, outer joins, multiversion
+ concurrency control.  Graphical user interfaces and bindings for many
+ programming languages are available as well.
+ .
+ This package provides detached debugging symbols for PostgreSQL-BDR 9.4.
+
+Package: postgresql-bdr-client-9.4
+Architecture: any
+Multi-Arch: foreign
+Provides: postgresql-client-9.4, postgresql-client
+Conflicts: postgresql-client-9.4
+Replaces: postgresql-client-9.4
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ libpq5 (>= ${source:Upstream-Version}),
+ postgresql-client-common (>= 142~)
+Suggests: postgresql-bdr-9.4, postgresql-doc-9.4
+Description: front-end programs for PostgreSQL-BDR 9.4
+ This package contains client and administrative programs for
+ PostgreSQL: these are the interactive terminal client psql and
+ programs for creating and removing users and databases.
+ .
+ This is the client package for PostgreSQL-BDR 9.4. If you install
+ PostgreSQL-BDR 9.4 on a standalone machine, you need the server package
+ postgresql-9.4, too. On a network, you can install this package on
+ many client machines, while the server package may be installed on
+ only one machine.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: postgresql-bdr-server-dev-9.4
+Architecture: any
+Section: libdevel
+Provides: postgresql-server-dev-9.4
+Conflicts: postgresql-server-dev-9.4
+Replaces: postgresql-server-dev-9.4
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ libpq-dev (>= 9.4~),
+ postgresql-common (>= 142~)
+Description: development files for PostgreSQL-BDR 9.4 server-side programming
+ Header files for compiling SSI code to link into PostgreSQL's backend; for
+ example, for C functions to be called from SQL.
+ .
+ This package also contains the Makefiles necessary for building add-on
+ modules of PostgreSQL, which would otherwise have to be built in the
+ PostgreSQL source-code tree.
+ .
+ PostgreSQL is an object-relational SQL database management system.

@@ -1,0 +1,116 @@
+postgresql-9.4 (9.4.1-1) unstable; urgency=medium
+
+  * New upstream version.
+    + libpq5: Name lookups fixed in minimal chroots (Closes: #756627)
+    + Fix buffer overruns in to_char() (CVE-2015-0241)
+    + Fix buffer overruns in contrib/pgcrypto (CVE-2015-0243)
+    + Fix possible loss of frontend/backend protocol synchronization after an
+      error (CVE-2015-0244)
+    + Fix information leak via constraint-violation error messages
+      (CVE-2014-8161)
+
+ -- Christoph Berg <myon@debian.org>  Wed, 04 Feb 2015 17:55:28 +0100
+
+postgresql-9.4 (9.4.0-1) unstable; urgency=medium
+
+  * 9.4 released.
+  * libpq5.symbols: PQhostaddr removed; it was new in 9.4.
+
+ -- Christoph Berg <myon@debian.org>  Wed, 17 Dec 2014 22:21:22 +0100
+
+postgresql-9.4 (9.4~rc1-1) unstable; urgency=medium
+
+  * First 9.4 RC release.
+  * Update psql call in dump-reload instructions.
+  * Reenable 010_pg_basebackup.t tests, fixed upstream.
+
+ -- Christoph Berg <myon@debian.org>  Tue, 18 Nov 2014 09:49:04 +0100
+
+postgresql-9.4 (9.4~beta3-3) unstable; urgency=medium
+
+  * Temporarily disable failing test in 010_pg_basebackup.t.
+
+ -- Christoph Berg <myon@debian.org>  Thu, 16 Oct 2014 09:32:06 +0200
+
+postgresql-9.4 (9.4~beta3-2) unstable; urgency=medium
+
+  * postgresql-9.4.preinst: Output detailed dump-reload instructions when
+    refusing the package upgrade, and also add a NEWS item about it.
+    (Closes: #764705)
+  * Add libipc-run-perl for the regression tests which otherwise skip large
+    parts.
+  * Update Standards-Version.
+
+ -- Christoph Berg <myon@debian.org>  Wed, 15 Oct 2014 19:44:43 +0200
+
+postgresql-9.4 (9.4~beta3-1) unstable; urgency=medium
+
+  * New upstream beta version.
+    + Catalog version number changed, older 9.4 clusters need to be dumped and
+      reloaded.
+    + Regexp regression fixed. (Closes: #760564)
+    + CACHE_LINE_SIZE definition renamed to mitigate conflict on *BSD.
+      (Closes: #763098)
+
+  [ Martin Pitt ]
+  * Add missing logrotate test dependency.
+
+  [ Christoph Berg ]
+  * Set Multi-Arch: foreign in postgresql-client-9.4 and postgresql-doc-9.4.
+    (Closes: #757520; do it even on non-multiarch dists, it doesn't hurt.)
+  * Fix postgresql_fdw in description, spotted by Zack Weinberg, thanks!
+    (Closes: #762389)
+
+ -- Christoph Berg <myon@debian.org>  Tue, 07 Oct 2014 20:39:57 +0200
+
+postgresql-9.4 (9.4~beta2-1) unstable; urgency=low
+
+  * New upstream beta version.
+    + Secure Unix-domain sockets of temporary postmasters started during make
+      check (Noah Misch)
+
+      Any local user able to access the socket file could connect as the
+      server's bootstrap superuser, then proceed to execute arbitrary code as
+      the operating-system user running the test, as we previously noted in
+      CVE-2014-0067. This change defends against that risk by placing the
+      server's socket in a temporary, mode 0700 subdirectory of /tmp.
+
+  * postgresql-9.4.preinst: Fail upgrade when upgrading from beta1, the
+    catalog version changed. People should dump/remove their old clusters
+    first.
+  * Use util-linux' uuid lib as backend for the uuid-ossp extension
+    (--with-uuid=e2fs).
+  * Enable sepgsql (--with-selinux). On systems with libselinux1-dev < 2.1.10,
+    this is automatically disabled.
+  * Revert multiarch for libpq-dev and libecpg-dev. (Closes: #750111, #750112)
+  * Remove our pg_regress patches to support --host=/path. Implemented
+    upstream as fix for CVE-2014-0067.
+  * debian/copyright: Say that there are various copyright holders for the
+    contrib modules. (Hello Lintian!)
+  * Update Vcs URLs.
+
+ -- Christoph Berg <myon@debian.org>  Mon, 21 Jul 2014 22:26:24 +0200
+
+postgresql-9.4 (9.4~beta1-2) experimental; urgency=medium
+
+  * Update watch file for 9.4.
+  * Enable multiarch support in libpq and friends. (Closes: #706849)
+    Support is automatically disabled when the distribution does not support
+    it.
+  * Stop providing postgresql-dbg in postgresql-9.4-dbg. Its only purpose was
+    to conflict with other postgresql-*-dbg packages, and that's no longer
+    needed with build-id debug symbols.
+  * Skip -pie on 32bit archs for performance and stability reasons.
+    Closes: #749686; details at
+    http://www.postgresql.org/message-id/20140519115318.GB7296@msgid.df7cb.de
+  * Update contrib copyright statements, and move them to a separate file.
+    Thanks to Thorsten Alteholz for reviewing the package.
+
+ -- Christoph Berg <myon@debian.org>  Fri, 30 May 2014 20:09:50 +0200
+
+postgresql-9.4 (9.4~beta1-1) experimental; urgency=low
+
+  * Update for 9.4. Packaging based on 9.3 branch.
+  * Bump to debhelper 9 to get debug symbol files based on build-ids.
+
+ -- Christoph Berg <myon@debian.org>  Mon, 12 May 2014 22:08:37 +0200

@@ -1,0 +1,44 @@
+#!/bin/sh
+set -e
+
+# DB format changed between beta 1 and 2 and 3
+if [ "$1" = "upgrade" -o "$1" = "install" ] && \
+    dpkg --compare-versions "$2" lt-nl "9.4~beta3"; then
+    if pg_lsclusters -h | grep -q '^9.4'; then
+        cat <<EOF
+
+The on-disk format of the PostgreSQL 9.4 data files has changed between
+beta2 and beta3 (and as a consequence, the catalog version number). For that
+reason, existing PostgreSQL 9.4 clusters need to be dumped using the old
+package version, and reloaded after upgrading the packages.
+
+The postgresql-9.4 package will now refuse to upgrade because version 9.4
+clusters exist on the system.
+
+Per default, a "main" cluster is created. Run "pg_lsclusters" to check if
+other clusters exists, and repeat the steps below appropriately.
+
+To resolve the situation, before upgrading, execute:
+# su - postgres
+$ pg_lsclusters
+$ pg_ctlcluster 9.4 main start
+$ pg_dumpall --cluster 9.4/main | gzip > 9.4-main.dump.gz
+$ cp -a /etc/postgresql/9.4/main 9.4-main.config
+$ pg_dropcluster 9.4 main --stop
+
+Then after the upgrade, execute:
+# su - postgres
+$ pg_createcluster 9.4 main
+$ cp 9.4-main.config/* /etc/postgresql/9.4/main
+$ pg_ctlcluster 9.4 main start
+$ zcat 9.4-main.dump.gz | psql -q --cluster 9.4/main
+$ rm -rf 9.4-main.config 9.4-main.dump.gz
+
+EOF
+        exit 1
+    fi
+fi
+
+#DEBHELPER#
+
+exit 0

@@ -1,0 +1,203 @@
+#!/usr/bin/make -f
+ifneq ($(shell which tclsh8.6),)
+TCL_VER := 8.6
+else
+TCL_VER := 8.5
+endif
+MAJOR_VER := 9.4
+
+DEB_BUILD_ARCH = $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+# this must also work for old releases with multiarch, so don't fail if the
+# variable doesn't exist
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH || true)
+
+# support multi-arch location
+ifneq ($(wildcard /usr/lib/$(DEB_HOST_MULTIARCH)/tcl$(TCL_VER)),)
+TCL_CONFIG_DIR := /usr/lib/$(DEB_HOST_MULTIARCH)
+else
+TCL_CONFIG_DIR := /usr/lib
+endif
+
+# support both hardening-wrapper (for backports) and dpkg-buildflags
+export DEB_BUILD_HARDENING = 1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all,-pie
+DPKG_EXPORT_BUILDFLAGS = 1
+-include /usr/share/dpkg/buildflags.mk
+LDFLAGS+= -Wl,--as-needed -L/usr/lib/mit-krb5 -L/usr/lib/$(DEB_HOST_MULTIARCH)/mit-krb5
+CFLAGS+= -I/usr/include/mit-krb5
+# skip -pie on 32bit archs for performance and stability reasons
+# (http://www.postgresql.org/message-id/20140519115318.GB7296@msgid.df7cb.de)
+ifneq ($(shell dpkg-architecture -qDEB_HOST_ARCH_BITS || :),32)
+CFLAGS+= -fPIC -pie
+endif
+
+# When protecting the postmaster with oom_adj=-17, allow the OOM killer to slay
+# the backends (http://archives.postgresql.org/pgsql-hackers/2010-01/msg00170.php)
+ifeq ($(shell uname -s),Linux)
+CFLAGS+= -DLINUX_OOM_SCORE_ADJ=0
+endif
+
+# sparc and alpha's gcc used to miscompile; see
+# http://lists.debian.org/debian-alpha/2007/11/msg00025.html
+#ifneq ($(findstring $(DEB_BUILD_ARCH), sparc alpha),)
+#    CFLAGS+=-O1
+#endif
+
+# Facilitate hierarchical profile generation on amd64 (#730134)
+ifeq ($(shell dpkg-architecture -qDEB_BUILD_ARCH),amd64)
+CFLAGS+= -fno-omit-frame-pointer
+endif
+
+export DPKG_GENSYMBOLS_CHECK_LEVEL=4
+
+COMMON_CONFIGURE_FLAGS= \
+  --mandir=/usr/share/postgresql/$(MAJOR_VER)/man \
+  --docdir=/usr/share/doc/postgresql-doc-$(MAJOR_VER) \
+  --sysconfdir=/etc/postgresql-common \
+  --datarootdir=/usr/share/ \
+  --datadir=/usr/share/postgresql/$(MAJOR_VER) \
+  --bindir=/usr/lib/postgresql/$(MAJOR_VER)/bin \
+  --libdir=/usr/lib/$(DEB_HOST_MULTIARCH)/ \
+  --libexecdir=/usr/lib/postgresql/ \
+  --includedir=/usr/include/postgresql/ \
+  --enable-nls \
+  --enable-integer-datetimes \
+  --enable-thread-safety \
+  --enable-debug \
+  --disable-rpath \
+  --with-uuid=e2fs \
+  --with-gnu-ld \
+  --with-pgport=5432 \
+  --with-system-tzdata=/usr/share/zoneinfo \
+  CFLAGS='$(CFLAGS)' \
+  LDFLAGS='$(LDFLAGS)'
+
+# allow missing krb5 and ldap during bootstrapping
+ifeq ($(DEB_STAGE),stage1)
+BOOTSTRAP_FLAGS=
+else
+BOOTSTRAP_FLAGS= --with-krb5 --with-gssapi --with-ldap
+endif
+
+# --with-selinux needs libselinux 2.1.10
+SEVERSION = $(shell dpkg-query -f '$${Version}' --show libselinux1-dev)
+ifeq ($(shell dpkg --compare-versions "$(SEVERSION)" ge 2.1.10 && echo yes),yes)
+SELINUX_FLAGS= --with-selinux
+else
+SELINUX_EXCLUDE= -Xsepgsql
+endif
+
+# build should fail on test suite failures on all arches
+TESTSUITE_FAIL_CMD=exit 1
+# hurd doesn't implement semaphores; succeed anyway so they at least have libpq5
+# plperl currently fails on kfreebsd-*
+ifneq ($(filter $(DEB_BUILD_ARCH), hurd-i386 kfreebsd-amd64 kfreebsd-i386),)
+TESTSUITE_FAIL_CMD=exit 0
+endif
+
+%:
+	dh $@ --parallel
+
+override_dh_auto_configure: stamp/configure-build stamp/configure-build-py3
+
+stamp/configure-build:
+	mkdir -p stamp build
+	cd build && ../configure \
+           --with-tcl \
+           --with-perl \
+           --with-python \
+           --with-pam \
+           --with-openssl \
+           --with-libxml \
+           --with-libxslt \
+           --with-tclconfig=$(TCL_CONFIG_DIR)/tcl$(TCL_VER) \
+           --with-includes=/usr/include/tcl$(TCL_VER) \
+           PYTHON=/usr/bin/python \
+           $(COMMON_CONFIGURE_FLAGS) \
+           $(BOOTSTRAP_FLAGS) \
+           $(SELINUX_FLAGS)
+	touch "$@"
+	
+stamp/configure-build-py3:
+	mkdir build-py3
+	cd build-py3 && ../configure \
+           --with-python \
+           PYTHON=/usr/bin/python3 \
+           $(COMMON_CONFIGURE_FLAGS)
+	touch "$@"
+
+override_dh_auto_build: stamp/build stamp/build-py3
+
+stamp/build: stamp/configure-build
+	cd build && $(MAKE) world
+
+	# generate POT files for translators
+	find -name nls.mk -exec sh -c "make -C \$$(dirname {}) init-po" \;
+
+	# build tutorial stuff
+	make -C build/src/tutorial NO_PGXS=1
+
+	touch "$@"
+
+stamp/build-py3: stamp/configure-build-py3
+	cd build-py3 && $(MAKE) -C src/backend/ submake-errcodes && $(MAKE) -C src/pl/plpython
+	touch "$@"
+
+override_dh_auto_install:
+	make -C build-py3/src/pl/plpython install DESTDIR=$(CURDIR)/debian/tmp
+	make -C build install-world DESTDIR=$(CURDIR)/debian/tmp
+	# compress manpages
+	gzip -9n $(CURDIR)/debian/tmp/usr/share/postgresql/*/man/man*/*.[137]
+
+override_dh_makeshlibs:
+	dh_makeshlibs -Xusr/lib/postgresql/$(MAJOR_VER)
+
+override_dh_auto_clean:
+	rm -rf build* stamp contrib/file_fdw/sql/file_fdw.sql
+
+override_dh_installchangelogs:
+	dh_installchangelogs HISTORY
+
+override_dh_compress:
+	dh_compress -X.source -X.c
+
+override_dh_install:
+ifneq ($(DEB_HOST_MULTIARCH),)
+	# enabling multiarch support in debian/lib*.install
+	sed -i -e 's!usr/lib/\(lib\|pkgconfig\)!usr/lib/*/\1!' debian/lib*.install
+else
+	# disabling multiarch support in debian/lib*.install
+	sed -i -e 's!usr/lib/\*/\(lib\|pkgconfig\)!usr/lib/\1!' debian/lib*.install
+endif
+	dh_install --fail-missing $(SELINUX_EXCLUDE)
+
+	# these go into the -pl* packages; -f because they don't exist for an -A build
+	rm -f debian/postgresql-contrib-$(MAJOR_VER)/usr/share/postgresql/$(MAJOR_VER)/extension/pl*
+
+	if [ -d debian/postgresql-doc-$(MAJOR_VER) ]; then \
+		install src/tutorial/*.c src/tutorial/*.source src/tutorial/Makefile src/tutorial/README debian/postgresql-doc-$(MAJOR_VER)/usr/share/doc/postgresql-doc-$(MAJOR_VER)/tutorial; \
+	fi
+
+override_dh_auto_test:
+ifeq (, $(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+	# when tests fail, print all regression.diffs files, as well as the newest log files
+	if ! $(MAKE) -C build check-world EXTRA_REGRESS_OPTS='--port=$(shell perl -le 'print 1024 + int(rand(64000))')'; then \
+	    for l in `find build -name regression.diffs -o -mmin 0 \( -name initdb.log -o -name postmaster.log \)`; do \
+		echo "******** $$l ********"; \
+		tail -n100 $$l; \
+	    done; \
+	    $(TESTSUITE_FAIL_CMD); \
+	fi
+endif
+
+override_dh_strip:
+	dh_strip --dbg-package=postgresql-$(MAJOR_VER)-dbg
+
+ifneq ($(DEB_HOST_MULTIARCH),)
+override_dh_gencontrol:
+	dh_gencontrol -- -Vmisc:Multi-Arch=same
+endif
+
+override_dh_builddeb:
+	dh_builddeb -- -Zxz
