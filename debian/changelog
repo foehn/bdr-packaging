@@ -1,3 +1,9 @@
+postgresql-bdr-9.4 (9.4.1-1) unstable; urgency=medium
+
+  * Initial BDR-PG packaging
+
+ -- Petr Jelinek <petr@2ndquadrant.com>  Mon, 23 Mar 2015 21:09:35 +0100
+
 postgresql-9.4 (9.4.1-1) unstable; urgency=medium
 
   * New upstream version.
