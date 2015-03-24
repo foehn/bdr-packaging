@@ -1,8 +1,8 @@
 Source: postgresql-bdr-9.4
 Section: database
 Priority: optional
-Maintainer: BDR Developers <bdr@2ndquadrant.com>
-Uploaders: BDR Developers <bdr@2ndquadrant.com>
+Maintainer: 2ndQuadrant Ltd <bdr@2ndquadrant.com>
+Uploaders: Petr Jelinek <petr@2ndquadrant.com>
 Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 9~),
  dpkg-dev (>= 1.16.1~) | hardening-wrapper,
