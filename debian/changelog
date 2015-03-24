@@ -1,3 +1,9 @@
+postgresql-bdr-9.4 (9.4.1-2) unstable; urgency=medium
+
+  * Fix package conflicts
+
+ -- Petr Jelinek <petr@2ndquadrant.com>  Tue, 24 Mar 2015 23:39:20 +0100
+
 postgresql-bdr-9.4 (9.4.1-1) unstable; urgency=medium
 
   * Initial BDR-PG packaging
