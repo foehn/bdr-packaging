@@ -6,7 +6,7 @@ Uploaders: Petr Jelinek <petr@2ndquadrant.com>
 Build-Depends: debhelper (>= 9), postgresql-server-dev-9.4, postgresql-server-dev-all, autoconf,
  libedit-dev, libxml2-dev, libxslt1-dev, libpam0g-dev | libpam-dev
 Standards-Version: 3.9.5
-Homepage: https://wiki.postgresql.org/wiki/BDR_Project
+Homepage: http://bdr-project.org
 Vcs-Git: git://git@git.postgresql.org/git/2ndquadrant_bdr.git
 Vcs-Browser: http://git.postgresql.org/gitweb/?p=2ndquadrant_bdr.git;a=tree;hb=refs/heads/bdr-plugin/next
 XS-Testsuite: autopkgtest
