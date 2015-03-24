@@ -31,7 +31,7 @@ Build-Depends: debhelper (>= 9~),
  opensp,
  xsltproc,
  gettext
-Homepage: http://www.postgresql.org/
+Homepage: http://bdr-project.org
 Vcs-Browser: http://git.postgresql.org/gitweb/?p=2ndquadrant_bdr.git;a=summary
 XS-Testsuite: autopkgtest
 
