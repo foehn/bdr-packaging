@@ -214,3 +214,116 @@ Description: development files for PostgreSQL-BDR 9.4 server-side programming
  PostgreSQL source-code tree.
  .
  PostgreSQL is an object-relational SQL database management system.
+
+Package: postgresql-bdr-contrib-9.4
+Architecture: any
+Depends: postgresql-bdr-9.4 (= ${binary:Version}),
+ ${misc:Depends},
+ ${shlibs:Depends}
+Suggests: libdbd-pg-perl
+Description: additional facilities for PostgreSQL
+ The PostgreSQL contrib package provides several additional features
+ for the PostgreSQL database. This version is built to work with the
+ server package postgresql-bdr-9.4.  contrib often serves as a testbed for
+ features before they are adopted into PostgreSQL proper:
+ .
+  adminpack      - File and log manipulation routines, used by pgAdmin
+  btree_gist     - B-Tree indexing using GiST (Generalised Search Tree)
+  chkpass        - An auto-encrypted password datatype
+  cube           - Multidimensional-cube datatype (GiST indexing example)
+  dblink         - Functions to return results from a remote database
+  earthdistance  - Operator for computing the distance (in miles) between
+                   two points on the earth's surface
+  fuzzystrmatch  - Levenshtein, metaphone, and soundex fuzzy string matching
+  hstore         - Store (key, value) pairs
+  intagg         - Integer aggregator/enumerator
+  _int           - Index support for arrays of int4, using GiST (benchmark
+                   needs the libdbd-pg-perl package)
+  isn            - type extensions for ISBN, ISSN, ISMN, EAN13 product numbers
+  lo             - Large Object maintenance
+  ltree          - Tree-like data structures
+  oid2name       - Maps OIDs to table names
+  pageinspect    - Inspection of database pages
+  passwordcheck  - Simple password strength checker
+  pg_buffercache - Real time queries on the shared buffer cache
+  pg_freespacemap- Displays the contents of the free space map (FSM)
+  pg_trgm        - Determine the similarity of text based on trigram matching
+  pg_standby     - Create a warm stand-by server
+  pgbench        - TPC-B like benchmark
+  pgcrypto       - Cryptographic functions
+  pgrowlocks     - A function to return row locking information
+  pgstattuple    - Returns the percentage of dead tuples in a table; this
+                   indicates whether a vacuum is required.
+  postgresql_fdw - foreign data wrapper for PostgreSQL
+  seg            - Confidence-interval datatype (GiST indexing example)
+  sepgsql        - mandatory access control (MAC) based on SELinux
+  spi            - PostgreSQL Server Programming Interface; 4 examples of
+                   its use:
+                   autoinc    - A function for implementing AUTOINCREMENT/
+                                IDENTITY
+                   insert_username - function for inserting user names
+                   moddatetime - Update modification timestamps
+                   refint     - Functions for implementing referential
+                                integrity (foreign keys).  Note that this is
+                                now superseded by built-in referential
+                                integrity.
+                   timetravel - Re-implements in user code the time travel
+                                feature that was removed in 6.3.
+  tablefunc      - examples of functions returning tables
+  uuid-ossp      - UUID generation functions
+  vacuumlo       - Remove orphaned large objects
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: postgresql-bdr-plperl-9.4
+Architecture: any
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ postgresql-bdr-9.4 (= ${binary:Version}),
+ perl
+Provides: postgresql-bdr-plperl
+Description: PL/Perl procedural language for PostgreSQL 9.4
+ PL/Perl enables an SQL developer to write procedural language functions
+ for PostgreSQL 9.4 in Perl.  You need this package if you have any
+ PostgreSQL 9.4 functions that use the languages plperl or plperlu.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: postgresql-bdr-plpython-9.4
+Architecture: any
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ postgresql-bdr-9.4 (= ${binary:Version})
+Provides: postgresql-bdr-plpython
+Description: PL/Python procedural language for PostgreSQL 9.4
+ PL/Python enables an SQL developer to write procedural language functions
+ for PostgreSQL 9.4 in Python.  You need this package if you have any
+ PostgreSQL 9.4 functions that use the languages plpython or plpythonu.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: postgresql-bdr-plpython3-9.4
+Architecture: any
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ postgresql-bdr-9.4 (= ${binary:Version})
+Provides: postgresql-bdr-plpython3
+Description: PL/Python 3 procedural language for PostgreSQL 9.4
+ PL/Python 3 enables an SQL developer to write procedural language functions
+ for PostgreSQL 9.4 in Python 3.  You need this package if you have any
+ PostgreSQL 9.4 functions that use the languages plpython3 or plpython3u.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: postgresql-bdr-pltcl-9.4
+Architecture: any
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ postgresql-bdr-9.4 (= ${binary:Version})
+Provides: postgresql-bdr-pltcl
+Description: PL/Tcl procedural language for PostgreSQL 9.4
+ PL/Tcl enables an SQL developer to write procedural language functions
+ for PostgreSQL 9.4 in Tcl.  You need this package if you have any
+ PostgreSQL 9.4 functions that use the languages pltcl or pltclu.
+ .
+ PostgreSQL is an object-relational SQL database management system.
