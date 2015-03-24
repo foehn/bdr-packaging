@@ -13,7 +13,7 @@ XS-Testsuite: autopkgtest
 
 Package: postgresql-9.4-udr-plugin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:depends}, postgresql-9.4
+Depends: ${shlibs:Depends}, ${misc:depends}, postgresql-9.4, postgresql-contrib-9.4
 Conflicts: postgresql-bdr-9.4-bdr-plugin
 Description: UDR Plugin for PostgreSQL 9.4
  UDR Plugin for PostgreSQL 9.4

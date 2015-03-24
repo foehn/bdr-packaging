@@ -13,7 +13,7 @@ XS-Testsuite: autopkgtest
 
 Package: postgresql-PGVERSION-udr-plugin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:depends}, postgresql-PGVERSION
+Depends: ${shlibs:Depends}, ${misc:depends}, postgresql-PGVERSION, postgresql-contrib-PGVERSION
 Conflicts: postgresql-bdr-PGVERSION-bdr-plugin
 Description: UDR Plugin for PostgreSQL PGVERSION
  UDR Plugin for PostgreSQL PGVERSION
