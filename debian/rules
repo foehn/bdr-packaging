@@ -167,16 +167,16 @@ ifneq ($(DEB_HOST_MULTIARCH),)
 	# enabling multiarch support in debian/lib*.install
 	sed -i -e 's!usr/lib/\(lib\|pkgconfig\)!usr/lib/*/\1!' debian/lib*.install
 else
-	 # disabling multiarch support in debian/lib*.install
+	# disabling multiarch support in debian/lib*.install
 	sed -i -e 's!usr/lib/\*/\(lib\|pkgconfig\)!usr/lib/\1!' debian/lib*.install
 endif
-	dh_install $(SELINUX_EXCLUDE)
+	dh_install --fail-missing $(SELINUX_EXCLUDE)
 
 	# these go into the -pl* packages; -f because they don't exist for an -A build
-	rm -f debian/postgresql-contrib-$(MAJOR_VER)/usr/share/postgresql/$(MAJOR_VER)/extension/pl*
+	rm -f debian/postgresql-bdr-contrib-$(MAJOR_VER)/usr/share/postgresql/$(MAJOR_VER)/extension/pl*
 
-	if [ -d debian/postgresql-doc-$(MAJOR_VER) ]; then \
-		install src/tutorial/*.c src/tutorial/*.source src/tutorial/Makefile src/tutorial/README debian/postgresql-doc-$(MAJOR_VER)/usr/share/doc/postgresql-doc-$(MAJOR_VER)/tutorial; \
+	if [ -d debian/postgresql-bdr-doc-$(MAJOR_VER) ]; then \
+		install src/tutorial/*.c src/tutorial/*.source src/tutorial/Makefile src/tutorial/README debian/postgresql-bdr-doc-$(MAJOR_VER)/usr/share/doc/postgresql-doc-$(MAJOR_VER)/tutorial; \
 	fi
 
 override_dh_auto_test:

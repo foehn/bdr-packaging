@@ -44,7 +44,7 @@ Depends: ${misc:Depends},
  libssl-dev,
  krb5-multidev,
  comerr-dev
-Suggests: postgresql-doc-9.4
+Suggests: postgresql-bdr-doc-9.4
 Description: header files for libpq5 (PostgreSQL library)
  Header files and static library for compiling C programs to link
  with the libpq library in order to communicate with a PostgreSQL
@@ -181,7 +181,7 @@ Depends: ${misc:Depends},
  ${shlibs:Depends},
  libpq5 (>= ${source:Upstream-Version}),
  postgresql-client-common (>= 142~)
-Suggests: postgresql-bdr-9.4, postgresql-doc-9.4
+Suggests: postgresql-bdr-9.4, postgresql-bdr-doc-9.4
 Description: front-end programs for PostgreSQL-BDR 9.4
  This package contains client and administrative programs for
  PostgreSQL: these are the interactive terminal client psql and
@@ -212,6 +212,17 @@ Description: development files for PostgreSQL-BDR 9.4 server-side programming
  This package also contains the Makefiles necessary for building add-on
  modules of PostgreSQL, which would otherwise have to be built in the
  PostgreSQL source-code tree.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: postgresql-bdr-doc-9.4
+Architecture: all
+Multi-Arch: foreign
+Section: doc
+Depends: ${misc:Depends}
+Description: documentation for the PostgreSQL database management system
+ This package contains all README files, user manual, and examples for
+ PostgreSQL 9.4. The manual is in HTML format.
  .
  PostgreSQL is an object-relational SQL database management system.
 
