@@ -163,6 +163,13 @@ override_dh_compress:
 	dh_compress -X.source -X.c
 
 override_dh_install:
+ifneq ($(DEB_HOST_MULTIARCH),)
+	# enabling multiarch support in debian/lib*.install
+	sed -i -e 's!usr/lib/\(lib\|pkgconfig\)!usr/lib/*/\1!' debian/lib*.install
+else
+	 # disabling multiarch support in debian/lib*.install
+	sed -i -e 's!usr/lib/\*/\(lib\|pkgconfig\)!usr/lib/\1!' debian/lib*.install
+endif
 	dh_install $(SELINUX_EXCLUDE)
 
 	# these go into the -pl* packages; -f because they don't exist for an -A build

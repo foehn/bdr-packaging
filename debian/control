@@ -35,6 +35,95 @@ Homepage: http://bdr-project.org
 Vcs-Browser: http://git.postgresql.org/gitweb/?p=2ndquadrant_bdr.git;a=summary
 XS-Testsuite: autopkgtest
 
+Package: libpq-dev
+Architecture: any
+Section: libdevel
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ libpq5 (= ${binary:Version}),
+ libssl-dev,
+ krb5-multidev,
+ comerr-dev
+Suggests: postgresql-doc-9.4
+Description: header files for libpq5 (PostgreSQL library)
+ Header files and static library for compiling C programs to link
+ with the libpq library in order to communicate with a PostgreSQL
+ database backend.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: libpq5
+Architecture: any
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: ${misc:Multi-Arch}
+Description: PostgreSQL C client library
+ libpq is a C library that enables user programs to communicate with
+ the PostgreSQL database server.  The server can be on another machine
+ and accessed through TCP/IP.  This version of libpq is compatible
+ with servers from PostgreSQL 8.2 or later.
+ .
+ This package contains the run-time library, needed by packages using
+ libpq.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: libecpg6
+Architecture: any
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: ${misc:Multi-Arch}
+Description: run-time library for ECPG programs
+ The libecpg shared library is used by programs built with ECPG
+ (Embedded PostgreSQL for C).
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: libecpg-dev
+Architecture: any
+Section: libdevel
+Depends: ${misc:Depends},
+ ${shlibs:Depends},
+ libpq-dev,
+ libecpg6 (= ${binary:Version}),
+ libecpg-compat3 (= ${binary:Version}),
+ libpgtypes3 (= ${binary:Version})
+Description: development files for ECPG (Embedded PostgreSQL for C)
+ This package contains the necessary files to build ECPG (Embedded
+ PostgreSQL for C) programs.  It includes the development libraries
+ and the preprocessor program ecpg.
+ .
+ PostgreSQL is an object-relational SQL database management system.
+ .
+ Install this package if you want to write C programs with SQL statements
+ embedded in them (rather than run by an external process).
+
+Package: libecpg-compat3
+Architecture: any
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: ${misc:Multi-Arch}
+Description: older version of run-time library for ECPG programs
+ The libecpg_compat shared library is used by programs built with ecpg.
+ (Embedded PostgreSQL for C).
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
+Package: libpgtypes3
+Architecture: any
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: ${misc:Multi-Arch}
+Description: shared library libpgtypes for PostgreSQL 9.4
+ The libpgtypes shared library is used by programs built with ecpg.
+ (Embedded PostgreSQL for C).
+ .
+ PostgreSQL is an object-relational SQL database management system.
+
 Package: postgresql-bdr-9.4
 Architecture: any
 Provides: postgresql-9.4
