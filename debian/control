@@ -17,3 +17,4 @@ Depends: ${shlibs:Depends}, ${misc:depends}, postgresql-bdr-9.4
 Conflicts: postgresql-9.4-udr-plugin
 Description: BDR Plugin for PostgreSQL-BDR 9.4
  BDR Plugin for PostgreSQL-BDR 9.4
+
