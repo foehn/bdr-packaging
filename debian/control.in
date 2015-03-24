@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: 2ndQuadrant Ltd <bdr@2ndquadrant.com>
 Uploaders: Petr Jelinek <petr@2ndquadrant.com>
 Build-Depends: debhelper (>= 9), postgresql-server-dev-9.4, postgresql-server-dev-all, autoconf,
- libedit-dev, libxml2-dev, libxslt1-dev, libpam0g-dev | libpam-dev
+ libedit-dev, libxml2-dev, libxslt1-dev, libpam0g-dev | libpam-dev, libselinux1-dev [linux-any]
 Standards-Version: 3.9.5
 Homepage: http://bdr-project.org
 Vcs-Git: git://git@git.postgresql.org/git/2ndquadrant_bdr.git
