@@ -1,3 +1,9 @@
+bdr-plugin (0.9.1-1) unstable; urgency=medium
+
+  * Bugfix version
+
+ --  Petr Jelinek <petr@2ndquadrant.com>  Tue, 26 May 2015 23:18:17 +0200
+
 bdr-plugin (0.9.0.0-1) unstable; urgency=medium
 
   * Initial Packaging
