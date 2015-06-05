@@ -1,0 +1,260 @@
+#!/bin/sh
+#
+# postgresql-setup    Initialization and upgrade operations for PostgreSQL
+#
+# Installed as /usr/pgsql-x.y/bin/postgresqlxy-setup
+#
+
+# PGVERSION is the full package version, e.g., 9.4.0
+# Note: the specfile inserts the correct value during package build
+PGVERSION=__RPM_PGVERSION__
+# PGMAJORVERSION is major version, e.g., 9.4 (this should match PG_VERSION)
+PGMAJORVERSION=__RPM_PGMAJORVERSION__
+PGSHORTMAJORVERSION=__RPM_PGSHORTMAJORVERSION__
+# PGENGINE is the directory containing the postmaster executable
+# Note: the specfile inserts the correct value during package build
+PGENGINE=__RPM_PGENGINE__
+# PREVMAJORVERSION is the previous major version, e.g., 9.1; it's the default
+# target for pg_upgrade if not overridden.
+PREVMAJORVERSION=__RPM_PREVMAJORVERSION__
+# systemd unit name / initscript name
+PGUNITNAME=__RPM_PGUNITNAME__
+# Package name; used in help messages
+PGPACKAGENAME=__RPM_PGPACKAGENAME__
+PGLONGNAME=__RPM_PGLONGNAME__
+
+# The second parameter is the new database version, i.e. $PGMAJORVERSION in this case.
+# Use  the unit name from the rpm build, if not specified.
+SERVICE_NAME="${2:-$PGUNITNAME}"
+
+# The third parameter is the old database service control file name sans any
+# .service suffix, e.g postgresql-9.3 in this case.  Use
+# "postgresql-$PREVMAJORVERSION" service, if not specified.
+OLD_SERVICE_NAME="${3:-postgresql-$PREVMAJORVERSION}"
+
+# Was this RPM built with systemd or sysvinit?
+USING_SYSTEMD=__RPM_SYSTEMD__
+
+if [ "$USING_SYSTEMD" -eq 1 ]; then
+    # SYSTEMD ONLY
+    #
+    # Find the unit file for new version.
+    if [ -f "/etc/systemd/system/${SERVICE_NAME}.service" ]
+    then
+    	SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+    elif [ -f "/lib/systemd/system/${SERVICE_NAME}.service" ]
+    then
+    	SERVICE_FILE="/lib/systemd/system/${SERVICE_NAME}.service"
+    else
+    	echo "Could not find systemd unit file ${SERVICE_NAME}.service"
+    	exit 1
+    fi
+    
+    # Get port number and data directory from the service file
+    PGDATA=$(gawk -F '=' '/^Environment=PGDATA=/ { print $3}' "${SERVICE_FILE}")
+    PGSERVERUSER=$(awk -F '=' '/^User=/ { print $2}' "${SERVICE_FILE}")
+    PGSERVERGROUP=$(awk -F '=' '/^Group=/ { print $2}' "${SERVICE_FILE}")
+else
+    # SYSV ONLY
+    #
+    # Use the same PGDATA etc as the initscript, substituted in by RPM
+    # at packaging time.
+    PGDATA=__RPM_PGDATA__
+    PGSERVERUSER=__RPM_PGUSER__
+    PGSERVERGROUP=__RPM_PGGROUP__
+
+    # Override defaults from /etc/sysconfig/pgsql if file is present
+    # must be the same as used by the initscript.
+    [ -f /etc/sysconfig/__RPM_PGSHORTNAME__/${SERVICE_NAME} ] && . /etc/sysconfig/__RPM_PGSHORTNAME__/${SERVICE_NAME}
+fi
+
+# Log files for initdb and pg_upgrade are placed in the parent dir of the
+# datadir. On a default install that's /var/lib/pgsql/$MAJORVERSION .
+PGINITDBLOG="$(dirname $PGDATA)/initdb.log"
+
+export PGDATA
+
+# For SELinux we need to use 'runuser' not 'su'
+if [ -x /sbin/runuser ]
+then
+    SU=runuser
+else
+    SU=su
+fi
+
+
+script_result=0
+
+# code shared between initdb and upgrade actions
+perform_initdb(){
+    if [ ! -e "$PGDATA" -a ! -h "$PGDATA" ]
+    then
+        mkdir -p "$PGDATA" || return 1
+        chown $PGSERVERUSER:$PGSERVERGROUP "$PGDATA"
+        chmod go-rwx "$PGDATA"
+    fi
+    # Clean up SELinux tagging for PGDATA
+    [ -x /sbin/restorecon ] && /sbin/restorecon "$PGDATA"
+
+    # Create the initdb log file if needed
+    if [ ! -e "$PGINITDBLOG" -a ! -h "$PGINITDBLOG" ]
+    then
+        touch "$PGINITDBLOG" || return 1
+        chown $PGSERVERUSER:$PGSERVERGROUP "$PGINITDBLOG"
+        chmod go-rwx "$PGINITDBLOG"
+        [ -x /sbin/restorecon ] && /sbin/restorecon "$PGINITDBLOG"
+    fi
+
+    # Initialize the database
+    $SU -l postgres -c "$PGENGINE/initdb --pgdata='$PGDATA' --auth='ident'" >> "$PGINITDBLOG" 2>&1 < /dev/null
+
+    # Create directory for postmaster log files
+    mkdir "$PGDATA/pg_log"
+    chown $PGSERVERUSER:$PGSERVERGROUP "$PGDATA/pg_log"
+    chmod go-rwx "$PGDATA/pg_log"
+
+    if [ -f "$PGDATA/PG_VERSION" ]
+    then
+        return 0
+    fi
+    echo 1>&2 "ERROR: $PGDATA/PG_VERSION not found after initdb; check logs for details."
+    return 1
+}
+
+initdb(){
+    if [ -f "$PGDATA/PG_VERSION" ]
+    then
+        echo $"Data directory is not empty!"
+        echo
+        script_result=1
+    else
+        echo -n $"Initializing database ... "
+        if perform_initdb
+        then
+            echo $"OK"
+        else
+            echo $"failed, see $PGINITDBLOG"
+            script_result=1
+        fi
+        echo
+    fi
+}
+
+upgrade(){
+    PGUPLOG="$(dirname $PGDATA)/pgupgrade.log"
+
+    # postgresql-setup upgade has been broken for ages, don't try to fix
+    # it at the same time as changing everything else.
+    echo "pg_upgrade via $PGLONGNAME$PGSHORTMAJORVERSION-setup isn't currently supported"
+    echo "Use the initdb action then perform a manual pg_upgrade"
+    exit 1
+
+    ## Absorb configuration settings from the specified systemd service files.
+
+    # Figure out what version we're upgrading from using the control file name
+    # if we can.
+    OLDMAJORVERSION=$(echo "$OLD_SERVICE_NAME" | gawk 'match($0, "postgresql-([0-9]+)\\.([0-9]+)\\.service", matches) { printf "%d.%d",matches[1],matches[2]; }' )
+    if [ -z "$OLDMAJORVERSION" ]; then
+        echo 2>&1 "Failed to determine major version from service file name $OLD_SERVICE_NAME"
+        echo 2>&1 "You will need to run pg_upgrade manually instead."
+        exit 1
+    fi
+
+    # Find the old Pg version's control file
+    if [ -f "/etc/systemd/system/${OLD_SERVICE_NAME}.service" ]
+    then
+        OLD_SERVICE_FILE="/etc/systemd/system/${OLD_SERVICE_NAME}.service"
+    elif [ -f "/lib/systemd/system/${OLD_SERVICE_NAME}.service" ]
+    then
+        OLD_SERVICE_FILE="/lib/systemd/system/${OLD_SERVICE_NAME}.service"
+    else
+        echo "Could not find systemd unit file ${OLD_SERVICE_NAME}.service"
+        exit 1
+    fi
+
+    ## Get port number and data directory from the service file
+    NEWPGDATA=$PGDATA
+    NEWPGPORT=$(gawk -F '=' '/^Environment=PGPORT=/ { print $3}' "${SERVICE_FILE}")
+
+    ## Get port number and data directory for old serverfrom the service file
+    OLDPGDATA=$(gawk -F '=' '/^Environment=PGDATA=/ { print $3}' "${OLD_SERVICE_FILE}")
+    OLDPGPORT=$(gawk -F '=' '/^Environment=PGPORT=/ { print $3}' "${OLD_SERVICE_FILE}")
+
+    # OLDPGENGINE is the directory containing the previous postmaster executable
+    # We can determine it reliably by examining the binary paths in the control file
+    OLDPGENGINE=$(dirname $(awk -F '[= ]' '/^ExecStart=/ { print $2}' "${OLD_SERVICE_FILE}" ) )
+
+    # must see previous version in PG_VERSION
+    if [ ! -f "$OLDPGDATA/PG_VERSION" -o x`cat "$OLDPGDATA/PG_VERSION"` != x"$OLDMAJORVERSION" ]
+    then
+        echo
+        echo $"Cannot upgrade because database in $OLDPGDATA is missing or not of expected version $OLDMAJORVERSION."
+        echo
+        exit 1
+    fi
+
+    if [ ! -x "$PGENGINE/pg_upgrade" ]
+    then
+        echo
+        echo $"pg_upgrade not found for $PGMAJORVERSION. Please install the ${PGPACKAGENAME}-contrib RPM."
+        echo
+        exit 5
+    fi
+
+    # Perform initdb on the new server
+    $PGENGINE/postgresql${PGMAJORVERSION/.}-setup initdb
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ]
+    then
+        echo "Failed to initdb new datadir for $PGMAJORVERSION; see $PGINITDBLOG for details"
+        exit 1
+    fi
+
+    # Check the clusters first, without changing any data:
+    $RUNUSER -l postgres -c "$PGENGINE/pg_upgrade -b $OLDPGENGINE -B $PGENGINE/ -d $OLDPGDATA -D $NEWPGDATA -p $OLDPGPORT -P $NEWPGPORT -c"
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]
+    then
+        echo "Clusters checked successfully, proceeding with upgrade from $OLDMAJORVERSION to $PGMAJORVERSION"
+        echo "Stopping old cluster"
+        if [ "$USING_SYSTEMD" -eq 1 ]
+        then
+            /bin/systemctl stop $OLD_SERVICE_NAME.service
+        else
+            service $OLD_SERVICE_NAME stop
+        fi
+
+        # Set up log file for pg_upgrade
+        rm -f "$PGUPLOG"
+        touch "$PGUPLOG" || exit 1
+        chown $PGSERVERUSER:$PGSERVERGROUP "$PGUPLOG"
+        chmod go-rwx "$PGUPLOG"
+        [ -x /sbin/restorecon ] && /sbin/restorecon "$PGUPLOG"
+
+        echo "Performing upgrade"
+        $RUNUSER -l postgres -c "$PGENGINE/pg_upgrade \
+            -b $OLDPGENGINE -B $PGENGINE/ \
+            -d $OLDPGDATA -D $NEWPGDATA -p $OLDPGPORT -P $NEWPGPORT" >> "$PGUPLOG" 2>&1 < /dev/null
+    else
+        echo "Cluster check failed. Please see the output above."
+        exit 1
+    fi
+        echo
+
+    exit 0
+}
+
+# See how we were called.
+case "$1" in
+  initdb)
+    initdb
+    ;;
+  upgrade)
+    upgrade
+    ;;
+  *)
+    echo $"Usage: $0 {initdb|upgrade} [ service_name ]"
+    exit 2
+esac
+
+exit $script_result

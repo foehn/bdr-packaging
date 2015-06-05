@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# This script verifies that the postgresql data directory has been correctly
+# initialized.  We do not want to automatically initdb it, because that has
+# a risk of catastrophic failure (ie, overwriting a valuable database) in
+# corner cases, such as a remotely mounted database on a volume that's a
+# bit slow to mount.  But we can at least emit a message advising newbies
+# what to do.
+#
+# It's used directly from the systemd service file as a prelaunch check.
+# under sysv init it is called by the sysv init script as a sanity check.
+
+PGDATA="$1"
+
+if [ -z "$PGDATA" ]
+then
+    echo "Usage: $0 database-path"
+    exit 1
+fi
+
+# PGVERSION is the full package version, e.g., 9.4.0
+# Note: the specfile inserts the correct value during package build
+PGVERSION=__RPM_PGVERSION__
+# PGMAJORVERSION is major version, e.g., 9.4 (this should match PG_VERSION)
+PGMAJORVERSION=__RPM_PGMAJORVERSION__
+PGSHORTMAJORVERSION=__RPM_PGSHORTMAJORVERSION__
+# PREVMAJORVERSION is the previous major version, e.g., 9.3, for upgrades
+# Note: the specfile inserts the correct value during package build
+PREVMAJORVERSION=__RPM_PREVMAJORVERSION__
+# PGDOCDIR is the directory containing the package's documentation
+# Note: the specfile inserts the correct value during package build
+PGDOCDIR=__RPM_PGDOCDIR__
+# Where to find Pg binaries for our version
+PGENGINE=__RPM_PGENGINE__
+PGLONGNAME=__RPM_PGLONGNAME__
+
+# Check for the PGDATA structure
+if [ -f "$PGDATA/PG_VERSION" ] && [ -d "$PGDATA/base" ]
+then
+    # Check version of existing PGDATA
+    if [ x`cat "$PGDATA/PG_VERSION"` = x"$PGMAJORVERSION" ]
+    then
+        : A-OK
+    else
+        OLDVER="$(cat "$PGDATA/PG_VERSION")"
+        MAJOR1=${OLDVER/%.*}
+        MAJOR2=${OLDVER/#*.}
+        if [ -n "$MAJOR1" -a -n "$MAJOR2" ]; then
+            if [ "$MAJOR1" > 8 ] || [ "$MAJOR1" = 8 -a "$MAJOR2" >= 4 ]; then
+                # Old version is 8.4 or newer, pg_upgrade should work
+                echo $"An old version, $OLDVER, of the database format was found."
+                echo $"Use \"${PGLONGNAME}${PGSHORTMAJORVERSION}-setup upgrade postgresql-${OLDVER}\" to upgrade to version $PGMAJORVERSION"
+                echo $"or dump and reload to upgrade."
+                echo $"See $PGDOCDIR/README.rpm-dist for more information."
+                #exit 1
+            fi
+        fi
+        echo $"An old version, $OLDVER, of the database format was found."
+        echo $"pg_upgrade is not supported for this version."
+        echo $"You need to dump and reload before using PostgreSQL $PGMAJORVERSION."
+        echo $"See $PGDOCDIR/README.rpm-dist for more information."
+        exit 1
+    fi
+else
+    # No existing PGDATA! Warn the user to initdb it.
+    echo $"\"$PGDATA\" is missing or empty."
+    echo $"Use \"$PGENGINE/postgresql94-setup initdb\" to initialize the database cluster."
+    echo $"See $PGDOCDIR/README.rpm-dist for more information."
+    exit 1
+fi
+
+exit 0

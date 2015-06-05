@@ -1,0 +1,51 @@
+# Systemd service definition for __RPM_PGPACKAGENAME__
+#
+# It's not recommended to modify this file in-place, because it will be
+# overwritten during package upgrades.  If you want to customize, the
+# best way is to create a file "/etc/systemd/system/postgresql-9.4.service",
+# containing
+#	.include /lib/systemd/system/postgresql-9.4.service
+#	...make your changes here...
+# For more info about custom unit files, see
+# http://fedoraproject.org/wiki/Systemd#How_do_I_customize_a_unit_file.2F_add_a_custom_unit_file.3F
+
+# Note: changing PGDATA will typically require adjusting SELinux
+# configuration as well.
+
+# Note: do not use a PGDATA pathname containing spaces, or you will
+# break postgresql-setup.
+[Unit]
+Description=__RPM_SHORTSERVERDESCRIPTION__
+After=syslog.target
+After=network.target
+
+[Service]
+Type=forking
+
+User=__RPM_PGUSER__
+Group=__RPM_PGGROUP__
+
+# Note: avoid inserting whitespace in these Environment= lines, or you may
+# break postgresql-setup.
+
+# Location of database directory
+Environment=PGDATA=__RPM_PGDATA__
+
+# Where to send early-startup messages from the server (before the logging
+# options of postgresql.conf take effect)
+# This is normally controlled by the global default set by systemd
+# StandardOutput=syslog
+
+# Disable OOM kill on the postmaster
+OOMScoreAdjust=-1000
+
+ExecStartPre=__RPM_PGENGINE__/__RPM_PGLONGNAME____RPM_PGSHORTMAJORVERSION__-check-db-dir "${PGDATA}"
+ExecStart=__RPM_PGENGINE__/pg_ctl start -D "${PGDATA}" -s -w -t 300
+ExecStop=__RPM_PGENGINE__/pg_ctl stop -D "${PGDATA}" -s -m fast
+ExecReload=__RPM_PGENGINE__/pg_ctl reload -D "${PGDATA}" -s
+
+# Give a reasonable amount of time for the server to start up/shut down
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target
