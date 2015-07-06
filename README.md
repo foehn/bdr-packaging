@@ -60,19 +60,51 @@ by building a srpm with `rpmbuild -bs`, using `yum-builddep` from `yum-utils`
 to install build depends, then `rpmbuild -ba` the srpm to produce RPMs. That's
 what `mock` does behind the scenes, so it should work.
 
-It's generally sufficient to just:
+The official BDR RPM releases (see "Preparing official releases") use automation
+for reproducible builds. For ad-hoc builds of patched RPMs or snapshots, you
+can just run some manual `mock` commands, specifying any valid target from
+`/etc/mock/targets` where called for with `-r`.
 
-     ./mock_build_all.sh rpm/bdr.spec
+## Building bdr-pg and bdr from specs
 
-You can limit the build to only some targets, see the targets variable in
-mock-build-all.sh . E.g.
+    (cd rpm && spectool -g postgresql94.spec )
+    mock -r fedora-21-x86_64 --buildsrpm --spec rpm/postgresql94.spec --sources rpm/ --resultdir fedora-21
+    mock -r fedora-21-x86_64 --rebuild fedora-21/postgresql-bdr94-*.src.rpm --resultdir fedora-21
 
-    targets=mock-targets/fedora-21-x86_64.cfg ./mock-build-all.sh rpm/bdr.spec
+    (cd rpm && spectool -g bdr.spec)
+    mock -r fedora-21-x86_64 --buildsrpm --spec rpm/bdr.spec --sources rpm/ --resultdir fedora-21
+    mock -r fedora-21-x86_64 --init
+    mock -r fedora-21-x86_64 --install fedora-21/postgresql-bdr94-*.rpm
+    mock -r fedora-21-x86_64 --no-clean --rebuild fedora-21/postgresql-bdr94-bdr-*.src.rpm --resultdir fedora-21/
 
-If you want to test the packages you built locally, without pushing to a remote
-repo, you need only define a repo in yum with the file:// URL to your locally
-built repo. `mock-build-all.sh` creates all the required metadata in the subdirs
-of the `repo/` directory, with one repository for each target OS and architecture.
+
+## Building udr from specs
+
+To build UDR, you need to copy the mock target(s) you want to build from
+`/etc/mock/targets` to a temporary path, then add the PGDG yum repository for
+that target to the target definition file so that `mock` knows where to get
+the stock PostgreSQL RPMs.
+
+Alternately, you can use the same approach as in "building bdr-pg and bdr from
+specs", manually installing the RPMs into the `mock` chroot before performing
+the UDR build.  You will find `yumdownloader` useful for this.
+
+    (cd rpm && spectool -g udr.spec)
+    mock -r fedora-21-x86_64 --buildsrpm --spec rpm/udr.spec --sources rpm/ --resultdir fedora-21
+
+ then either:
+
+    yumdownloader postgresql...[xxx]
+    mock --init
+    mock --install [xxx]
+    mock -r fedora-21-x86_64 --no-clean --rebuild fedora-21/postgresql94-udr-*.src.rpm --resultdir fedora-21
+
+or invoke `mock --rebuild` with `mock -r /path/to/my/custom/fedora-21-x86_64.cfg`, where the custom
+config has the PGDG PostgreSQL repository configured:
+
+    mock -r ./my-fedora-21-with-pgdg_x86_64.cfg --rebuild fedora-21/postgresql94-udr-*.src.rpm --resultdir fedora-21
+
+
 
 # Snapshots
 
