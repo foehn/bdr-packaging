@@ -28,7 +28,7 @@ Version:	0.9.2
 Release:	1_2ndQuadrant%{?releasegitsuffix}%{?dist}
 Summary:	UDR - Uni-Directional Logical Replication for PostgreSQL
 
-Group:		Applications/Daabases
+Group:		Applications/Databases
 License:	PostgreSQL
 URL:		http://2ndquadrant.com/bdr
 Source0:	http://packages.2ndquadrant.com/postgresql-bdr94-2ndquadrant/tarballs/bdr-%{version}%{?githash:-git%{githash}}.tar.bz2
