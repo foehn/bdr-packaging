@@ -1,3 +1,9 @@
+postgresql-bdr-9.4 (9.4.4-1) unstable; urgency=medium
+
+   * New upstream version.
+
+ -- Petr Jelinek <petr@2ndquadrant.com>  Fri, 24 Jul 2015 13:28:05 +0200
+
 postgresql-bdr-9.4 (9.4.2-1) unstable; urgency=medium
 
    * New upstream version.
