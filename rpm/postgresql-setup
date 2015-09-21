@@ -106,12 +106,16 @@ perform_initdb(){
     fi
 
     # Initialize the database
-    $SU -l $PGSERVERUSER -c "$PGENGINE/initdb --pgdata='$PGDATA' --auth='ident'" >> "$PGINITDBLOG" 2>&1 < /dev/null
+    initdbcmd="$PGENGINE/initdb --pgdata='$PGDATA' --auth='ident'"
+    initdbcmd+=" $PGSETUP_INITDB_OPTIONS"
+
+    $SU -l $PGSERVERUSER -c "$initdbcmd" >> "$PGINITDBLOG" 2>&1 < /dev/null
 
     # Create directory for postmaster log files
     mkdir "$PGDATA/pg_log"
     chown $PGSERVERUSER:$PGSERVERGROUP "$PGDATA/pg_log"
     chmod go-rwx "$PGDATA/pg_log"
+    [ -x /sbin/restorecon ] && /sbin/restorecon "$PGDATA/pg_log"
 
     if [ -f "$PGDATA/PG_VERSION" ]
     then
