@@ -9,7 +9,7 @@
 
 # The version of the underlying PostgreSQL release we require, coresponding to
 # Version: in the Pg RPM, and optionally the Release too.
-%{!?required_pg:%define required_pg 9.4.4_bdr1}
+%{!?required_pg:%define required_pg 9.4.5_bdr1}
 
 # If you're building a git snapshot, you must set the githash macro so that
 # the spec file will locate the correct tarball. If you're building a tagged
@@ -24,7 +24,7 @@
 %{?githash:%define releasegitsuffix _git%{githash}}
 
 Name:		%{packagename}%{shortmajorversion}-bdr
-Version:	0.9.2
+Version:	0.9.3
 Release:	1_2ndQuadrant%{?releasegitsuffix}%{?dist}
 Summary:	BDR - Bi-Directional Replication for PostgreSQL
 
@@ -85,6 +85,10 @@ make -s %{?_smp_mflags} USE_PGXS=1 DESTDIR=%{buildroot} install
 %doc %{_docdir}/%{shortname}/extension/bdr.conf.sample
 
 %changelog
+* Tue Oct 20 2015 Craig Ringer <craig@2ndquadrant.com> 0.9.3-1_2ndQuadrant
+- Release 0.9.3, requiring Pg 9.4.5_bdr1
+- Bugfixes per release notes
+
 * Mon Jul 6 2015 Craig Ringer <craig@2ndquadrant.com> 0.9.2-1_2ndQuadrant
 - Release 0.9.2, requiring Pg 9.4.4_bdr1
 - Bugfixes per release notes
