@@ -5,7 +5,11 @@ set -e
 VERSION=9.4
 
 if [ "$1" = configure ]; then
-    . /usr/share/postgresql-common/maintscripts-functions
+	# workaround for postgresql-common 171+ which only includes
+	# this file when package names matches postgresql-?.?|postgresql-?.??
+	. /usr/share/debconf/confmodule
+
+	. /usr/share/postgresql-common/maintscripts-functions
 
     configure_version $VERSION "$2"
 fi

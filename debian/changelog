@@ -1,3 +1,9 @@
+postgresql-bdr-9.4 (9.4.5-2) unstable; urgency=medium
+
+   * Workaround for postgresql-common 171+.
+
+ -- Petr Jelinek <petr@2ndquadrant.com>  Sun, 17 Jan 2016 08:38:42 +0100
+
 postgresql-bdr-9.4 (9.4.5-1) unstable; urgency=medium
 
    * New upstream version.
