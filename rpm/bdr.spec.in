@@ -25,7 +25,7 @@
 
 Name:		%{packagename}%{shortmajorversion}-bdr
 Version:	0.9.3
-Release:	1_2ndQuadrant%{?releasegitsuffix}%{?dist}
+Release:	2_2ndQuadrant%{?releasegitsuffix}%{?dist}
 Summary:	BDR - Bi-Directional Replication for PostgreSQL
 
 Group:		Applications/Databases
@@ -85,6 +85,9 @@ make -s %{?_smp_mflags} USE_PGXS=1 DESTDIR=%{buildroot} install
 %doc %{_docdir}/%{shortname}/extension/bdr.conf.sample
 
 %changelog
+* Tue Mar 22 2016 Craig Ringer <craig@2ndquadrant.com> 0.9.3-2_2ndQuadrant
+- Rebuild for BDR-pg 9.4.6-1
+
 * Tue Oct 20 2015 Craig Ringer <craig@2ndquadrant.com> 0.9.3-1_2ndQuadrant
 - Release 0.9.3, requiring Pg 9.4.5_bdr1
 - Bugfixes per release notes

@@ -206,7 +206,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		%{packagename}%{shortmajorversion}
-Version:	9.4.5_bdr%{pgbdrrelease}
+Version:	9.4.6_bdr%{pgbdrrelease}
 Release:	%{releasever}%{releasetag}%{?releasegitsuffix}%{?dist}
 
 License:	PostgreSQL
@@ -628,11 +628,6 @@ CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS
 CFLAGS=`echo $CFLAGS|xargs -n 1|grep -v ffast-math|xargs -n 100`
 # Add LINUX_OOM_ADJ=0 to ensure child processes reset postmaster's oom_adj
 CFLAGS="$CFLAGS -DLINUX_OOM_ADJ=0"
-# Strip out -ffast-math from CFLAGS....
-CFLAGS=`echo $CFLAGS|xargs -n 1|grep -v ffast-math|xargs -n 100`
-# Always build with -fno-omit-frame-pointer so perf can get userspace stacks.
-# The cost is negligible, so enable for all builds not just debug.
-CFLAGS="$CFLAGS -fno-omit-frame-pointer"
 
 export LIBNAME=%{_lib}
 # We don't use the "configure" macro here because we don't install in /usr or
@@ -1375,6 +1370,10 @@ rm -rf %{buildroot}
 # ----------------------------
 
 %changelog
+
+* Tue Mar 22 2016 Craig Ringer <craig@2ndquadrant.com> 9.4.6_bdr1-1_2ndQuadrant
+- Update to 9.4.6
+- Remove -fno-omit-frame-pointer (suspected binary compat issues with PGDG)
 
 * Tue Oct 20 2015 Craig Ringer <craig@2ndquadrant.com> 9.4.5_bdr1-1_2ndQuadrant
 - Release for BDR 0.9.3
