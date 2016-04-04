@@ -206,7 +206,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		%{packagename}%{shortmajorversion}
-Version:	9.4.6_bdr%{pgbdrrelease}
+Version:	9.4.7_bdr%{pgbdrrelease}
 Release:	%{releasever}%{releasetag}%{?releasegitsuffix}%{?dist}
 
 License:	PostgreSQL
@@ -1370,6 +1370,9 @@ rm -rf %{buildroot}
 # ----------------------------
 
 %changelog
+
+* Mon Apr 4 2016 Craig Ringer <craig@2ndquadrant.com> 9.4.7_bdr1-1_2ndQuadrant
+- Update to 9.4.7
 
 * Tue Mar 22 2016 Craig Ringer <craig@2ndquadrant.com> 9.4.6_bdr1-1_2ndQuadrant
 - Update to 9.4.6
