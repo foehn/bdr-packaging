@@ -59,7 +59,7 @@
 # If building a tagged release, set % gittag to the full tag name. If building
 # a git snapshot, set % githash. One of the two MUST be set.
 #
-%define gittag bdr-pg/REL9_4_6-1
+%define gittag bdr-pg/REL9_4_7-1
 
 # packagename sets the name of the package. Unsurprisingly.
 #
